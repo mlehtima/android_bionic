@@ -1221,6 +1221,12 @@ void __system_property_read_callback(const prop_info* pi,
 int __system_property_get(const char* name, char* value) {
   const prop_info* pi = __system_property_find(name);
 
+  /* In case we're called from Ubuntu */
+  if (__system_property_area__ == NULL) {
+    value[0] = 0;
+    return 0;
+  }
+
   if (pi != 0) {
     return __system_property_read(pi, nullptr, value);
   } else {
