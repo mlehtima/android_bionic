@@ -67,7 +67,7 @@
 #include "android-base/strings.h"
 #include "ziparchive/zip_archive.h"
 
-extern void __libc_init_globals(KernelArgumentBlock&);
+extern void __libc_init_globals(KernelArgumentBlock&, int hybris = 0);
 extern void __libc_init_AT_SECURE(KernelArgumentBlock&);
 
 extern "C" void _start();

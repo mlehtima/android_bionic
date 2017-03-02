@@ -52,9 +52,9 @@ __END_DECLS
 
 class KernelArgumentBlock;
 
-__LIBC_HIDDEN__ void __libc_init_globals(KernelArgumentBlock& args);
+__LIBC_HIDDEN__ void __libc_init_globals(KernelArgumentBlock& args, int hybris = 0);
 
-__LIBC_HIDDEN__ void __libc_init_common(KernelArgumentBlock& args);
+__LIBC_HIDDEN__ void __libc_init_common(KernelArgumentBlock& args, int hybris = 0);
 
 __LIBC_HIDDEN__ void __libc_init_AT_SECURE(KernelArgumentBlock& args);
 

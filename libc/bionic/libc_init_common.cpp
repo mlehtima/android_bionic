@@ -83,7 +83,7 @@ extern "C" void* __kernel_syscall() {
 }
 #endif
 
-void __libc_init_globals(KernelArgumentBlock& args) {
+void __libc_init_globals(KernelArgumentBlock& args, int hybris) {
 #if defined(__i386__)
   __libc_init_sysinfo(args);
 #endif
@@ -91,7 +91,10 @@ void __libc_init_globals(KernelArgumentBlock& args) {
   // In dynamic binaries, this is run at least twice for different copies of the
   // globals, once for the linker's copy and once for the one in libc.so.
   __libc_init_global_stack_chk_guard(args);
-  __libc_auxv = args.auxv;
+  if(!hybris)
+  {
+    __libc_auxv = args.auxv;
+  }
   __libc_globals.initialize();
   __libc_globals.mutate([&args](libc_globals* globals) {
     __libc_init_vdso(globals, args);
@@ -99,18 +102,31 @@ void __libc_init_globals(KernelArgumentBlock& args) {
   });
 }
 
-void __libc_init_common(KernelArgumentBlock& args) {
+extern "C" int my_printf(const char *f, ...);
+
+void __libc_init_common(KernelArgumentBlock& args, int hybris) {
   // Initialize various globals.
-  environ = args.envp;
+  if(!hybris)
+  {
+    environ = args.envp;
+  }
+
   errno = 0;
-  __progname = args.argv[0] ? args.argv[0] : "<unknown>";
-  __abort_message_ptr = args.abort_message_ptr;
+
+  if(!hybris)
+  {
+    __progname = args.argv[0] ? args.argv[0] : "<unknown>";
+    __abort_message_ptr = args.abort_message_ptr;
+  }
 
   // Get the main thread from TLS and add it to the thread list.
-  pthread_internal_t* main_thread = __get_thread();
-  __pthread_internal_add(main_thread);
+  if(!hybris)
+  {
+    pthread_internal_t* main_thread = __get_thread();
+    __pthread_internal_add(main_thread);
 
-  __system_properties_init(); // Requires 'environ'.
+    __system_properties_init(); // Requires 'environ'.
+  }
 }
 
 __noreturn static void __early_abort(int line) {

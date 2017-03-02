@@ -60,12 +60,18 @@ extern "C" {
   extern int __cxa_atexit(void (*)(void *), void *, void *);
 };
 
+extern "C" int __attribute__((weak)) my_printf(const char *, ...)
+{
+    return 0;
+}
+
 // We flag the __libc_preinit function as a constructor to ensure
 // that its address is listed in libc.so's .init_array section.
 // This ensures that the function is called by the dynamic linker
 // as soon as the shared library is loaded.
 __attribute__((constructor)) static void __libc_preinit() {
   // Read the kernel argument block pointer from TLS.
+#ifndef HYBRIS
   void** tls = __get_tls();
   KernelArgumentBlock** args_slot = &reinterpret_cast<KernelArgumentBlock**>(tls)[TLS_SLOT_BIONIC_PREINIT];
   KernelArgumentBlock* args = *args_slot;
@@ -76,7 +82,11 @@ __attribute__((constructor)) static void __libc_preinit() {
 
   __libc_init_globals(*args);
   __libc_init_common(*args);
-
+#else
+  KernelArgumentBlock args(NULL);
+  __libc_init_globals(args, 1);
+  __libc_init_common(args, 1);
+#endif
   // Hooks for various libraries to let them know that we're starting up.
   __libc_globals.mutate(__libc_init_malloc);
   netdClientInit();
@@ -93,7 +103,6 @@ __noreturn void __libc_init(void* raw_args,
                             void (*onexit)(void) __unused,
                             int (*slingshot)(int, char**, char**),
                             structors_array_t const * const structors) {
-
   KernelArgumentBlock args(raw_args);
 
   // Several Linux ABIs don't pass the onexit pointer, and the ones that
@@ -105,7 +114,6 @@ __noreturn void __libc_init(void* raw_args,
   if (structors->fini_array) {
     __cxa_atexit(__libc_fini,structors->fini_array,NULL);
   }
-
   exit(slingshot(args.argc, args.argv, args.envp));
 }
 
