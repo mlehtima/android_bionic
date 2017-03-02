@@ -28,6 +28,11 @@ extern void* calloc(size_t item_count, size_t item_size) __mallocfunc __wur __at
 extern void* realloc(void* p, size_t byte_count) __wur __attribute__((alloc_size(2)));
 extern void free(void* p);
 
+void* __attribute__((weak)) glibc_malloc(size_t s)
+{
+    return malloc(s);
+}
+
 extern void* memalign(size_t alignment, size_t byte_count) __mallocfunc __wur __attribute__((alloc_size(2)));
 extern size_t malloc_usable_size(const void* p);
 
